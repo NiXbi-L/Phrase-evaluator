@@ -1,7 +1,7 @@
 import cv2
 from preprocessing import preprocess
 
-img = cv2.imread('img/G_normal.jpg')
+img = cv2.imread('img/test_p.png')
 
 metrics, graphs = preprocess(img)
 

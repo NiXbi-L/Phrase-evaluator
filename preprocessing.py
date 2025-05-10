@@ -311,7 +311,7 @@ def preprocess(cv_image):
         'yd': []
               }
     for result in results:
-        sm, y_normalized, yd = evaluate_smoothness(result, True)
+        sm, y_normalized, yd = evaluate_smoothness(result)
         graphs['y_normalized'].append(y_normalized)
         graphs['yd'].append(yd)
         metrics.append(sm)
