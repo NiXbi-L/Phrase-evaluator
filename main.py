@@ -7,5 +7,5 @@ metrics, graphs = preprocess(img)
 
 for i in range(len(metrics)):
     print(f"Оценка графика: {i}")
-    print(graphs)
+    # print(graphs)
     print(metrics[i])
