@@ -7,6 +7,7 @@
 ```bash
 pip install opencv-python scikit-image scipy matplotlib numpy
 ```
+```
 
 ## Основные компоненты
 ### 1. Основной скрипт (`main.py`)
