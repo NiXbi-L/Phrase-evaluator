@@ -289,11 +289,19 @@ def preprocess(cv_image):
     contour_images = find_contours(dilated, cv_image)
 
     # show_image([dilated], titles=['Контур'])
+    
+    return contour_images
+
+
+def evaluate(image_path):
+    img = cv2.imread(image_path)
+
+    contour_images = preprocess(img)
 
     results = []
 
     for contour in contour_images:
-        # show_image([contour], titles=['Контур'])
+        show_image([contour], titles=['Контур'])
 
         print('Скелетонизация')
         res = flatten_points(find_line_skeleton(contour))
@@ -309,9 +317,9 @@ def preprocess(cv_image):
     graphs = {
         'y_normalized': [],
         'yd': []
-              }
+    }
     for result in results:
-        sm, y_normalized, yd = evaluate_smoothness(result)
+        sm, y_normalized, yd = evaluate_smoothness(result, True)
         graphs['y_normalized'].append(y_normalized)
         graphs['yd'].append(yd)
         metrics.append(sm)

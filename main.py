@@ -1,9 +1,6 @@
-import cv2
-from preprocessing import preprocess
+from preprocessing import evaluate
 
-img = cv2.imread('img/test_p.png')
-
-metrics, graphs = preprocess(img)
+metrics, graphs = evaluate('img/P_test.jpg')
 
 for i in range(len(metrics)):
     print(f"Оценка графика: {i}")
