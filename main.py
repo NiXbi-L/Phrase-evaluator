@@ -1,4 +1,4 @@
-from preprocessing import evaluate
+from Evaluator import evaluate
 
 metrics, graphs = evaluate('img/P_test.jpg')
 
