@@ -30,7 +30,7 @@ def flatten_points(points):
     return flat_list
 
 
-def combined_graph(data, show=False):
+def combined_graph(data):
     # Собираем все точки для вычисления центра
     all_points = data
 

@@ -53,43 +53,9 @@ def find_contours(dilated, image):
     return images
 
 
-def plot_overlaid_graphs(y1, y2, title='Наложение графиков',
-                         labels=('График 1', 'График 2'),
-                         xlabel='Индекс', ylabel='Значение'):
-    # Преобразование в numpy массивы
-    y1 = np.asarray(y1)
-    y2 = np.asarray(y2)
-
-    # Проверка одинаковой длины
-    if len(y1) != len(y2):
-        raise ValueError("Массивы должны быть одинаковой длины")
-
-    # Создание оси X на основе индексов
-    x = np.arange(len(y1))
-
-    # Настройка стиля
-    plt.figure(figsize=(12, 6))
-    plt.grid(True, alpha=0.3)
-    plt.title(title)
-
-    # Отрисовка графиков
-    plt.plot(x, y1, label=labels[0], alpha=0.8, linewidth=2, color='blue')
-    plt.plot(x, y2, label=labels[1], alpha=0.8, linewidth=2, color='orange')
-
-    # Подписи осей и легенда
-    plt.xlabel(xlabel)
-    plt.ylabel(ylabel)
-    plt.legend()
-
-    plt.tight_layout()
-    plt.show()
-
-
 def preprocess(cv_image):
-    print('Ищем контуры первого изображения')
+    print('Ищем контуры изображения')
     dilated = dilate_image(cv_image)
     contour_images = find_contours(dilated, cv_image)
-
-    # show_image([dilated], titles=['Контур'])
 
     return contour_images
