@@ -1,6 +1,6 @@
 import cv2
 import numpy as np
-import matplotlib.pyplot as plt
+import easyocr
 from skimage.morphology import skeletonize
 
 
@@ -27,7 +27,7 @@ def find_contours(dilated, image):
     height, width = image.shape[:2]
 
     # Фильтрация и вычисление центроидов
-    min_contour_area = 150
+    min_contour_area = 50
     filtered_contours = []
 
     for contour in contours:
@@ -53,9 +53,13 @@ def find_contours(dilated, image):
     return images
 
 
+def read_img(img_path):
+    return cv2.imread(img_path)
+
+
 def preprocess(cv_image):
     print('Ищем контуры изображения')
     dilated = dilate_image(cv_image)
     contour_images = find_contours(dilated, cv_image)
 
-    return contour_images
+    return contour_images, dilated

@@ -1,132 +1,144 @@
-# Документация для модуля анализа тремора при письме
+# Phrase Evaluator Module
 
-## Архитектура проекта
+Модуль для анализа рукописного текста на изображениях с вычислением различных метрик качества письма.
+
+## Основные функции
+
+Модуль позволяет вычислять следующие метрики:
+- Наклон строки (угол наклона и стабильность)
+- Стабильность отступов (поля)
+- Межстрочные интервалы
+- Размер символов
+- Связность линий (отсутствие разрывов)
+
+## Структура модуля
+
 ```
-.
-├── Evaluator.py          # Основной модуль оценки тремора
-├── preprocessing.py      # Модуль предобработки изображений
-└── main.py               # Пример использования
+Phrase_evaluator/
+├── Evaluator.py        # Основной модуль вычисления метрик
+├── preprocessing.py    # Предобработка изображений
+├── Dev_tools.py        # Инструменты визуализации
 ```
 
-## Установка
-1. Требуется Python 3.8+
-2. Установите зависимости:
-```bash
-pip install opencv-python scikit-image scipy matplotlib numpy
-```
+## Требования
 
-## Основные компоненты
-
-### 1. Модуль предобработки (`preprocessing.py`)
-#### Функции:
-- **`dilate_image(image)`** - бинаризация и морфологическая обработка
-- **`find_contours(dilated, image)`** - поиск и сортировка контуров
-- **`preprocess(cv_image)`** - главная функция обработки:
-  ```python
-  def preprocess(cv_image):
-      # Возвращает список изображений контуров
-      return contour_images
+- Python 3.7+
+- Зависимости:
+  ```
+  opencv-python
+  numpy
+  scipy
+  scikit-image
+  matplotlib
+  easyocr
   ```
 
-### 2. Модуль оценки (`Evaluator.py`)
-#### Основной пайплайн:
-```python
-def evaluate(image_path):
-   # Возвращает:
-   # metrics - список метрик для каждого контура
-   # graphs - сырые данные для анализа
-   return metrics, graphs
+Установите зависимости командой:
+```bash
+pip install opencv-python numpy scipy scikit-image matplotlib easyocr
 ```
 
-#### Ключевые функции:
-- **`find_line_skeleton()`** - скелетизация контура
-- **`combined_graph()`** - нормализация и сортировка точек
-- **`evaluate_smoothness()`** - расчет метрик плавности
-- **`interpolate_to_length()`** - унификация длины сигналов
+## Использование
 
-### 3. Пример использования (`main.py`)
+Основной сценарий работы:
+
 ```python
-from Evaluator import evaluate
+from Phrase_evaluator.Evaluator import (
+    evaluate_angle,
+    evaluate_indent,
+    evaluate_width,
+    evaluate_line_spacing,
+    evaluate_stroke_discontinuity
+)
+from Phrase_evaluator.preprocessing import preprocess, read_img
 
-metrics, graphs = evaluate('img/P_test.jpg')
+img = read_img('img/Screenshot_110.png')
 
-for i, metric in enumerate(metrics):
-    print(f"Контур {i}:")
-    print(f"  RMS: {metric['RMS_derivative']:.3f}")
-    print(f"  MAE: {metric['MAE_derivative']:.3f}")
-    print(f"  Max: {metric['Max_derivative']:.3f}")
-    print(f"  Zero: {metric['Zero_crossings']}")
+contour_images, dilated = preprocess(img)
+
+mean_angle, angle_std = evaluate_angle(dilated)
+indent_std, left_right_margin_diff = evaluate_indent(dilated)
+char_height_mean = evaluate_width(dilated)
+line_spacing_mean, line_spacing_cv = evaluate_line_spacing(dilated)
+stroke_discontinuity = evaluate_stroke_discontinuity(contour_images)
+
+print(f'1. Наклон строки:\n'
+      f'mean_angle: {mean_angle}\n'
+      f'angle_std: {angle_std}\n\n'
+      f'3. Межстрочные интервалы:\n'
+      f'line_spacing_mean: {line_spacing_mean}\n'
+      f'line_spacing_cv: {line_spacing_cv}\n\n'
+      f'4. Поля:\n'
+      f'left_right_margin_diff: {left_right_margin_diff}\n'
+      f'left_indent_std: {indent_std[0]}\n'
+      f'right_indent_std: {indent_std[1]}\n\n'
+      f'6. Размер символов:\n'
+      f'char_height_mean: {char_height_mean}\n\n'
+      f'8. Связность линий:\n'
+      f'stroke_discontinuity: {stroke_discontinuity}')
+
+
 ```
 
-## Этапы обработки данных
-1. **Загрузка изображения** (через OpenCV)
-2. **Предобработка**:
-   - Бинаризация
-   - Удаление шумов
-   - Скелетизация
-   - Поиск контуров
-3. **Анализ контуров**:
-   - Нормализация координат
-   - Интерполяция до 1000 точек
-4. **Расчет метрик**:
-   - RMS/MAE/Max производной
-   - Подсчет пересечений нуля
+## Описание метрик
 
-## Интерпретация метрик
-| Метрика             | Норма          | Тремор         |
-|----------------------|----------------|----------------|
-| RMS_derivative      | < 0.1         | > 0.5          |
-| MAE_derivative      | < 0.05        | > 0.3          |
-| Max_derivative      | < 0.5         | > 2.0          |
-| Zero_crossings      | < 50          | > 200          |
+1. **Наклон строки**
+   - `mean_angle`: Средний угол наклона строк (градусы)
+   - `angle_std`: Стандартное отклонение угла наклона
 
-## Работа с результатами
-### Структура выходных данных
+2. **Стабильность отступов**
+   - `left_indent_std`: Стандартное отклонение левого отступа (σ)
+   - `right_indent_std`: Стандартное отклонение правого отступа (σ)
+   - `left_right_margin_diff`: Разница между левым и правым полем (px)
+
+3. **Межстрочные интервалы**
+   - `line_spacing_mean`: Среднее расстояние между строками (px)
+   - `line_spacing_cv`: Коэффициент вариации интервалов (%)
+
+4. **Размер символов**
+   - `char_height_mean`: Средняя высота символов (px)
+
+5. **Связность линий**
+   - `stroke_discontinuity`: Количество разрывов в штрихах
+
+## Инструменты визуализации
+
+Модуль `Dev_tools.py` содержит функции для визуализации:
+- `plot_multiple_graphs()`: Наложение нескольких графиков
+- `show_image()`: Отображение изображений
+- `plot_multiple_points()`: Визуализация точек с bounding box
+- `plot_axis()`: Анализ распределения точек
+- `plot_paired_groups()`: Визуализация парных групп точек
+- `plot_segment()`: Анализ угла наклона отрезка
+
+Пример использования:
 ```python
-metrics = [
-    {   # Для каждого контура
-        'RMS_derivative': float,
-        'MAE_derivative': float,
-        'Max_derivative': float,
-        'Zero_crossings': int
-    },
-    ...
-]
+from Phrase_evaluator.Dev_tools import show_image, plot_paired_groups
 
-graphs = {
-    'y_normalized': [np.array, ...],  # Нормализованные расстояния
-    'yd': [np.array, ...]            # Производные сигналов
-}
+# Показать обработанное изображение
+show_image(dilated, title='Processed Image')
+
+# Визуализировать группы точек
+res, _, _ = process_points(dilated)
+plot_paired_groups(res)
 ```
 
-### Пример визуализации
-```python
-import matplotlib.pyplot as plt
+## Особенности работы
 
-idx = 0  # Номер контура
-plt.figure(figsize=(12, 4))
-plt.plot(graphs['y_normalized'][idx], label='Нормализованный сигнал')
-plt.plot(graphs['yd'][idx], label='Производная', alpha=0.7)
-plt.title(f'Анализ контура {idx}')
-plt.legend()
-plt.grid(True)
-plt.show()
-```
+1. **Предобработка изображения**:
+   - Преобразование в градации серого
+   - Бинаризация с адаптивным порогом
+   - Морфологические операции
+   - Скелетизация текста
 
-## Требования к изображениям
-- Формат: JPG/PNG
-- Разрешение: мин. 300x300 пикселей
-- Контраст: мин. 70% между текстом и фоном
-- Ориентация: горизонтальная/вертикальная без искажений
+2. **Анализ структуры текста**:
+   - Группировка точек по вертикальным линиям
+   - Проекция точек на границы
+   - Выделение строк и символов
 
-## Советы по улучшению точности
-1. Используйте образцы с четкими линиями
-2. Избегайте теней на фоне
-3. Делайте снимки при равномерном освещении
-4. Для калибровки используйте эталонные изображения
+3. **Вычисление метрик**:
+   - Статистический анализ распределений
+   - Расчет углов и расстояний
+   - Оценка вариативности параметров
 
-## Дополнительные возможности
-- Кастомный анализ через `graphs`
-- Экспорт данных в CSV
-- Интеграция с ML-моделями
-- Сравнительный анализ нескольких образцов
+Модуль предназначен для анализа качества рукописного текста и может использоваться в образовательных целях или системах автоматической оценки письменных работ.
