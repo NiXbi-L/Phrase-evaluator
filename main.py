@@ -7,7 +7,7 @@ from Phrase_evaluator.Evaluator import (
 )
 from Phrase_evaluator.preprocessing import preprocess, read_img
 
-img = read_img('img/Screenshot_110.png')
+img = read_img('img/Screenshot_82.png')
 
 contour_images, dilated = preprocess(img)
 
@@ -22,7 +22,7 @@ print(f'1. Наклон строки:\n'
       f'angle_std: {angle_std}\n\n'
       f'3. Межстрочные интервалы:\n'
       f'line_spacing_mean: {line_spacing_mean}\n'
-      f'line_spacing_cv: {line_spacing_cv}\n\n'
+      f'line_spacing_cv: {line_spacing_cv} %\n\n'
       f'4. Поля:\n'
       f'left_right_margin_diff: {left_right_margin_diff}\n'
       f'left_indent_std: {indent_std[0]}\n'
