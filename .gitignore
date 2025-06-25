@@ -2,3 +2,4 @@
 /.idea/
 /.venv/
 /__pycache__/
+/Phrase_evaluator/__pycache__

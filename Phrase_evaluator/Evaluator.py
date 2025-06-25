@@ -486,7 +486,7 @@ def process_points(bin_image):
 def evaluate_angle(bin_image):
     res, _, __ = process_points(bin_image)
     angles, mean_angle = calculate_angles(res)
-    angle_std = calculate_std_dev([angle for _, angle in angles.items()])
+    angle_std, _ = calculate_std_dev([angle for _, angle in angles.items()])
     return mean_angle, angle_std
 
 
@@ -497,7 +497,7 @@ def calculate_std_dev(data):
     mean = sum(data) / n
     squared_diffs = [(x - mean) ** 2 for x in data]
     variance = sum(squared_diffs) / (n - 1)  # Исправленная дисперсия для выборки
-    return math.sqrt(variance)
+    return math.sqrt(variance), mean
 
 
 def evaluate_indent(bin_image):
@@ -509,14 +509,20 @@ def evaluate_indent(bin_image):
     left_indent_delta = [indent - box[0] for indent in left_indent]
     right_indent_delta = [box[1] - indent for indent in right_indent]
 
-    left_indent_std = calculate_std_dev(left_indent_delta)
-    right_indent_std = calculate_std_dev(right_indent_delta)
+    left_indent_std, left_indent_mean = calculate_std_dev(left_indent_delta)
+    right_indent_std, right_indent_mean = calculate_std_dev(right_indent_delta)
 
-    left_margin = min(left_indent_delta) if left_indent_delta else 0
-    right_margin = min(right_indent_delta) if right_indent_delta else 0
-    left_right_margin_diff = abs(left_margin - right_margin)
+    if left_indent_mean:
+        left_indent_cv = left_indent_std / left_indent_mean
+    else:
+        left_indent_cv = 0
 
-    return (left_indent_std, right_indent_std), left_right_margin_diff
+    if right_indent_mean:
+        right_indent_cv = right_indent_std / right_indent_mean
+    else:
+        right_indent_cv = 0
+
+    return left_indent_cv, right_indent_cv
 
 
 def calculate_average_range(data):
@@ -543,8 +549,13 @@ def calculate_average_range(data):
     if not all_ranges:  # Если нет данных
         return 0.0
 
-    char_height_mean = sum(all_ranges) / len(all_ranges)
-    return char_height_mean
+    char_height_std, char_height_mean = calculate_std_dev(all_ranges)
+    if char_height_mean:
+        char_height_cv = char_height_std / char_height_mean
+    else:
+        char_height_cv = 0
+
+    return char_height_cv
 
 
 def evaluate_width(bin_image):
@@ -590,7 +601,7 @@ def calculate_line_spacing(data):
     if mean_spacing == 0:
         cv = 0.0
     else:
-        cv = (np.std(all_distances) / mean_spacing) * 100
+        cv = (np.std(all_distances) / mean_spacing)
 
     return mean_spacing, cv
 
